@@ -8,7 +8,7 @@
     <v-card
     class="my-2"
       width="400"
-
+    
     >
     <template v-slot:title>
     This is a title
@@ -52,15 +52,9 @@
         This is content
       </v-card-text>
     </v-card>
-  <v-btn class="mt-2" color="secondary" @click="openTab" rounded="lg">
+  <v-btn class="mt-2" color="secondary"  rounded="lg">
   More Detail
   </v-btn>
   </v-container>
 </template>
-<script setup>
-function openTab(){
-chrome.tabs.create({
-active: true,
-url:  'panda.html'
-}, null);}
-</script>
+<script setup></script>

@@ -1,1 +1,3 @@
-console.log('hello world content todo something~')
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    sendResponse({domain:document.URL})
+});

@@ -57,4 +57,11 @@
   </v-btn>
   </v-container>
 </template>
-<script setup></script>
+<script setup>
+import {onMounted} from "vue";
+onMounted(()=>{
+let uri = window.location.search.substring(1);
+let params = new URLSearchParams(uri);
+console.log(params.get("pa"));
+})
+</script>

@@ -1,10 +1,11 @@
 <template>
   <v-container class="d-flex align-center flex-column">
-    <div class="text-subtitle-2">With props</div>
   <v-progress-circular
   indeterminate
   color="primary"
   ></v-progress-circular>
+    <div class="text-subtitle-2">With props</div>
+
     <v-card
     class="my-2"
       width="400"
@@ -58,9 +59,25 @@
   </v-container>
 </template>
 <script setup>
+import {onMounted} from "vue"
+onMounted(async ()=>{
+let queryOptions = { active: true, currentWindow: true };
+let [tab] = await chrome.tabs.query(queryOptions);
+
+chrome.tabs.sendMessage(
+tab.id,
+{ color: "#00FF00" },
+function (response) {
+console.log(response);
+}
+);
+
+
+});
+
 function openTab(){
 chrome.tabs.create({
 active: true,
-url:  'panda.html'
+url:  'solana_main.html?pa=mo'
 }, null);}
 </script>

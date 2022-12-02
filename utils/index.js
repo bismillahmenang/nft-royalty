@@ -22,6 +22,16 @@ export function getNFTIdFromURL(url) {
   return newURL
 }
 
-export function getCollectionName(collection_name){
-    return collection_name.split("/")[1]
+export function getCollectionName(collection_name) {
+  return collection_name.split("/")[1]
+}
+
+export function lamportsToSol(lamports) {
+  return lamports / 100000000
+}
+
+export function ISOdateToReadable(isoTimestamp) {
+  const date = new Date(isoTimestamp)
+  return date.toLocaleString("day month year time")
+
 }

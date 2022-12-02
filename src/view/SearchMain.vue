@@ -76,7 +76,7 @@
                     </v-row>
 
                     <div class="font-weight-bold text-h6">Name</div>
-                    <div>Name</div>
+                <div>{{NFTMetadata.name}}</div>
                     <div class="font-weight-bold text-h6">Mint Address</div>
                     <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
                             target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>

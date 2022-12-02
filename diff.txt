@@ -88,3 +88,98 @@ index 57de517..76fdfa3 100644
      loading.value = false
    } catch (e) {
      console.log(e.message)
+diff --git a/services/index.js b/services/index.js
+index 806c75e..eacc4dc 100644
+--- a/services/index.js
++++ b/services/index.js
+@@ -24,9 +24,9 @@ export async function getNFTRoyalty(updateAuthority, symbol) {
+   return res.json()
+ }
+ export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
+-    const res = await fetch(`https://public-api.solscan.io/account?address=${nftAddress}`)
++    const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
+     const data=await res.json();
+-    const res2 = await fetch(`https://public-api.solscan.io/account?address=${data.data.metadata.collection.key}`)
++    const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+     const data2=await res2.json();
+     return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
+ }
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index 76fdfa3..e664d31 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -76,7 +76,7 @@
+                     </v-row>
+ 
+                     <div class="font-weight-bold text-h6">Name</div>
+-                    <div>Name</div>
++                <div>{{NFTMetadata.name}}</div>
+                     <div class="font-weight-bold text-h6">Mint Address</div>
+                     <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
+                             target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>
+diff --git a/diff.txt b/diff.txt
+index a2661ec..34a4e73 100644
+--- a/diff.txt
++++ b/diff.txt
+@@ -88,3 +88,32 @@ index 57de517..76fdfa3 100644
+      loading.value = false
+    } catch (e) {
+      console.log(e.message)
++diff --git a/services/index.js b/services/index.js
++index 806c75e..eacc4dc 100644
++--- a/services/index.js
+++++ b/services/index.js
++@@ -24,9 +24,9 @@ export async function getNFTRoyalty(updateAuthority, symbol) {
++   return res.json()
++ }
++ export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
++-    const res = await fetch(`https://public-api.solscan.io/account?address=${nftAddress}`)
+++    const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
++     const data=await res.json();
++-    const res2 = await fetch(`https://public-api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+++    const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
++     const data2=await res2.json();
++     return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
++ }
++diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
++index 76fdfa3..e664d31 100644
++--- a/src/view/SearchMain.vue
+++++ b/src/view/SearchMain.vue
++@@ -76,7 +76,7 @@
++                     </v-row>
++ 
++                     <div class="font-weight-bold text-h6">Name</div>
++-                    <div>Name</div>
+++                <div>{{NFTMetadata.name}}</div>
++                     <div class="font-weight-bold text-h6">Mint Address</div>
++                     <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
++                             target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>
+diff --git a/services/index.js b/services/index.js
+index 806c75e..eacc4dc 100644
+--- a/services/index.js
++++ b/services/index.js
+@@ -24,9 +24,9 @@ export async function getNFTRoyalty(updateAuthority, symbol) {
+   return res.json()
+ }
+ export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
+-    const res = await fetch(`https://public-api.solscan.io/account?address=${nftAddress}`)
++    const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
+     const data=await res.json();
+-    const res2 = await fetch(`https://public-api.solscan.io/account?address=${data.data.metadata.collection.key}`)
++    const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+     const data2=await res2.json();
+     return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
+ }
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index 76fdfa3..e664d31 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -76,7 +76,7 @@
+                     </v-row>
+ 
+                     <div class="font-weight-bold text-h6">Name</div>
+-                    <div>Name</div>
++                <div>{{NFTMetadata.name}}</div>
+                     <div class="font-weight-bold text-h6">Mint Address</div>
+                     <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
+                             target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>

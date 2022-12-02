@@ -24,9 +24,9 @@ export async function getNFTRoyalty(updateAuthority, symbol) {
   return res.json()
 }
 export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
-    const res = await fetch(`https://public-api.solscan.io/account?address=${nftAddress}`)
+    const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
     const data=await res.json();
-    const res2 = await fetch(`https://public-api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+    const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
     const data2=await res2.json();
     return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
 }

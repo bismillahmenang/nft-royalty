@@ -15,7 +15,7 @@ export async function getNFTDetailSolscan(nftAddress){
     return res.json()
 }
 export async function getNFTMetadataSolscan(nftAddress){
-    const res=await fetch(`https://public-api.solscan.io/token/meta?tokenAddress=${nftAddress}`)
+    const res=await fetch(`https://api.solscan.io/token/meta?token=${nftAddress}`)
     return res.json()
 
 }
@@ -28,12 +28,18 @@ export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
     const data=await res.json();
     const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
     const data2=await res2.json();
-    return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
+    return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name,image:data.data.metadata.data.uri}
 }
 export async function getNFTCollectionId(collectionAddress) {
-    const res = await fetch(`https://public-api.solscan.io/nft/detail?mint=${collectionAddress}`)
+    const res = await fetch(`https://api.solscan.io/nft/detail?mint=${collectionAddress}`)
     const data=await res.json();
 
     return {collectionId:data.data.collectionId,collectionName:data.data.collection}
+}
+
+export async function getImageFromURI(uri){
+    const res = await fetch(uri)
+    const data=await res.json();
+    return data.image
 }
 

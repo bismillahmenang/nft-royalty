@@ -52,7 +52,7 @@
 
                                     width="500"
                                     height="300"
-                                    :src="`https://picsum.photos/500/300?image=8`"
+                                    :src="image"
                                     :lazy-src="`https://picsum.photos/10/6?image=8`"
                                     aspect-ratio="1"
                                     cover
@@ -76,17 +76,17 @@
                     </v-row>
 
                     <div class="font-weight-bold text-h6">Name</div>
-                <div>{{NFTMetadata.name}}</div>
+                    <div>{{ NFTMetadata?.data?.name }}</div>
                     <div class="font-weight-bold text-h6">Mint Address</div>
-                    <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
-                            target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>
+                    <div><a :href="`https://solscan.io/token/${NFTId}`"
+                            target="_blank">{{ NFTId }}</a></div>
                     <div class="font-weight-bold text-h6">Collection Name</div>
                     <div><a target="_blank"
                             :href="`https://solscan.io/collection/${collectionId}`">{{ collectionName }}</a>
                     </div>
                     <div class="font-weight-bold text-h6">Update Authority</div>
-                    <div><a href="https://solscan.io/account/yootn8Kf22CQczC732psp7qEqxwPGSDQCFZHkzoXp25"
-                            target="_blank">yootn8Kf22CQczC732psp7qEqxwPGSDQCFZHkzoXp25</a></div>
+                    <div><a :href="`https://solscan.io/account/${updateAuthority}`"
+                            target="_blank">{{ updateAuthority }}</a></div>
                 </template>
             </v-card>
             <v-card class="my-2">
@@ -99,15 +99,49 @@
                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
                                :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
-                    <Column field="mint" header="Mint"></Column>
-                    <Column field="price" header="Price"></Column>
-                    <Column field="market_fee" header="Market Fee"></Column>
-                    <Column field="time" header="Time"></Column>
-                    <Column field="royalty_fee" header="Royalty Fee"></Column>
-                    <Column field="buyer" header="Buyer"></Column>
-                    <Column field="seller" header="Seller"></Column>
-                    <Column field="marketplace" header="Marketplace"></Column>
-                    <Column field="signature" header="Signature"></Column>
+                        <Column field="mint" header="Mint">
+                            <template #body="{data}">
+                            <a :href="`https://solscan.io/token/${data.mint}`" target="_blank">{{ truncateInTheMiddle(data.mint,10) }}</a>
+                            </template>
+                        </Column>
+                        <Column field="price" header="Price">
+                            <template #body="{data}">
+                                {{ lamportsToSol(data.price) }} SOL
+                            </template>
+                        </Column>
+                        <Column field="market_fee" header="Market Fee">
+                            <template #body="{data}">
+                                {{ lamportsToSol(data.market_fee) }} SOL
+                            </template>
+                        </Column>
+                        <Column field="time" header="Time">
+                            <template #body="{data}">
+                                {{ ISOdateToReadable(data.time) }}
+                            </template>
+                        </Column>
+                        <Column field="royalty_fee" header="Royalty Fee">
+                            <template #body="{data}">
+                                {{ lamportsToSol(data.royalty_fee) }} SOL
+                            </template>
+                        </Column>
+                        <Column field="buyer" header="Buyer">
+                            <template #body="{data}">
+                            <a :href="`https://solscan.io/account/${data.buyer}`" target="_blank">{{ truncateInTheMiddle(data.buyer,10) }}</a>
+
+                            </template>
+                        </Column>
+                        <Column field="seller" header="Seller">
+                            <template #body="{data}">
+                            <a :href="`https://solscan.io/account/${data.seller}`" target="_blank">{{ truncateInTheMiddle(data.seller,10) }}</a>
+                            </template>
+                        </Column>
+                        <Column field="marketplace" header="Marketplace"></Column>
+                        <Column field="signature" header="Signature">
+                            <template #body="{data}">
+                            <a :href="`https://solscan.io/tx/${data.signature}`" target="_blank">{{ truncateInTheMiddle(data.signature,10) }}</a>
+
+                            </template>
+                        </Column>
 
                     </DataTable>
                 </template>
@@ -121,50 +155,38 @@ import {
   getNFTCollectionId,
   getNFTMetadataSolscan,
   getNFTRoyalty,
-  getNFTUpdateAuthorityAndCollectionName
+  getNFTUpdateAuthorityAndCollectionName,
+  getImageFromURI
 } from '../../services'
-import {lamportsToSol, ISOdateToReadable} from "../../utils"
+import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle} from "../../utils"
 
 const loading = ref(false)
-const NFTid = ref("")
+const NFTId = ref("")
 const collectionName = ref("")
 const collectionId = ref("")
 const royaltyData = ref([])
 const NFTMetadata = ref({})
+const updateAuthority = ref("")
+const image = ref("")
 
 async function searchNFT() {
   loading.value = true
   try {
-    const {collectionId: CI, collectionName: CN} = await getNFTCollectionId(NFTid.value)
-    collectionName.value = CN
+    const {collectionId: CI} = await getNFTCollectionId(NFTId.value)
+
     collectionId.value = CI
-    const {updateAuthority, collectionName} = await getNFTUpdateAuthorityAndCollectionName(NFTid.value)
-    const _NFTMetadata = await getNFTMetadataSolscan(NFTid.value)
+    const {
+      updateAuthority: _updateAuthority,
+      collectionName: _collectionName,
+      image: _image
+    } = await getNFTUpdateAuthorityAndCollectionName(NFTId.value)
+    updateAuthority.value = _updateAuthority
+    collectionName.value = _collectionName
+    image.value = await getImageFromURI(_image)
+    const _NFTMetadata = await getNFTMetadataSolscan(NFTId.value)
     NFTMetadata.value = _NFTMetadata
-    const _royaltyData = await getNFTRoyalty(updateAuthority, collectionName)
-    royaltyData.value = _royaltyData.map(({
-      mint,
-      price,
-      buyer,
-      seller,
-      marketplace,
-      signature,
-      market_fee,
-      royalty_fee,
-      time
-    }) => {
-      return {
-        mint,
-        price: `${lamportsToSol(price)} SOL`,
-        buyer,
-        seller,
-        marketplace,
-        signature,
-        market_fee: `${lamportsToSol(market_fee)} SOL`,
-        royalty_fee: `${lamportsToSol(royalty_fee)} SOL`,
-        time: ISOdateToReadable(time)
-      }
-    })
+    const _royaltyData = await getNFTRoyalty(_updateAuthority, _collectionName)
+  royaltyData.value = _royaltyData
     loading.value = false
   } catch (e) {
     console.log(e.message)

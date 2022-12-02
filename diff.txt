@@ -183,3 +183,285 @@ index 76fdfa3..e664d31 100644
                      <div class="font-weight-bold text-h6">Mint Address</div>
                      <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
                              target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>
+diff --git a/services/index.js b/services/index.js
+index eacc4dc..b2012c6 100644
+--- a/services/index.js
++++ b/services/index.js
+@@ -15,7 +15,7 @@ export async function getNFTDetailSolscan(nftAddress){
+     return res.json()
+ }
+ export async function getNFTMetadataSolscan(nftAddress){
+-    const res=await fetch(`https://public-api.solscan.io/token/meta?tokenAddress=${nftAddress}`)
++    const res=await fetch(`https://api.solscan.io/token/meta?token=${nftAddress}`)
+     return res.json()
+ 
+ }
+@@ -28,12 +28,18 @@ export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
+     const data=await res.json();
+     const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+     const data2=await res2.json();
+-    return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name}
++    return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name,image:data.data.metadata.data.uri}
+ }
+ export async function getNFTCollectionId(collectionAddress) {
+-    const res = await fetch(`https://public-api.solscan.io/nft/detail?mint=${collectionAddress}`)
++    const res = await fetch(`https://api.solscan.io/nft/detail?mint=${collectionAddress}`)
+     const data=await res.json();
+ 
+     return {collectionId:data.data.collectionId,collectionName:data.data.collection}
+ }
+ 
++export async function getImageFromURI(uri){
++    const res = await fetch(uri)
++    const data=await res.json();
++    return data.image
++}
++
+diff --git a/src/view/PopupMain.vue b/src/view/PopupMain.vue
+index abd1a85..170932b 100644
+--- a/src/view/PopupMain.vue
++++ b/src/view/PopupMain.vue
+@@ -55,7 +55,7 @@
+                 Last Sales Royalty
+             </template>
+             <template v-slot:text>
+-                {{ royalty.royalty_fee }}
++            {{ lastSalesRoyalty }} SOL
+             </template>
+ 
+         </v-card>
+@@ -78,14 +78,14 @@
+ <script setup>
+ import {onMounted, ref} from "vue"
+ import {getNFTMetadataSolscan, getNFTRoyalty,  getNFTUpdateAuthorityAndCollectionName} from "../../services"
+-import {getNFTIdFromURL} from "../../utils"
++import {getNFTIdFromURL,lamportsToSol} from "../../utils"
+ 
+ const NFTId = ref("")
+ const NFTMetadata = ref({})
+ const loading = ref(false)
+ const royalty = ref({})
+ const isNFT = ref(false)
+-
++const lastSalesRoyalty=ref(0)
+ onMounted(async () => {
+   let queryOptions = {active: true, currentWindow: true}
+   let [tab] = await chrome.tabs.query(queryOptions)
+@@ -124,6 +124,7 @@ async function checkNFT() {
+         NFTId.value = tempNFTId
+         NFTMetadata.value = NFTMetadata2
+         royalty.value = royaltyData.length > 0 ? royaltyData[0] : {}
++      lastSalesRoyalty.value=lamportsToSol(royalty.value.royalty_fee);
+         loading.value = false
+       } catch (e) {
+         console.log(e.message)
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index e664d31..4298cf7 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -52,7 +52,7 @@
+ 
+                                     width="500"
+                                     height="300"
+-                                    :src="`https://picsum.photos/500/300?image=8`"
++                                    :src="image"
+                                     :lazy-src="`https://picsum.photos/10/6?image=8`"
+                                     aspect-ratio="1"
+                                     cover
+@@ -76,17 +76,17 @@
+                     </v-row>
+ 
+                     <div class="font-weight-bold text-h6">Name</div>
+-                <div>{{NFTMetadata.name}}</div>
++                    <div>{{ NFTMetadata?.data?.name }}</div>
+                     <div class="font-weight-bold text-h6">Mint Address</div>
+-                    <div><a href="https://solscan.io/token/5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv"
+-                            target="_blank">5UD6RutHFmp6BsEe1JN8gmNnQxizQasYYuQYTYPaHDEv</a></div>
++                    <div><a :href="`https://solscan.io/token/${NFTId}`"
++                            target="_blank">{{ NFTId }}</a></div>
+                     <div class="font-weight-bold text-h6">Collection Name</div>
+                     <div><a target="_blank"
+                             :href="`https://solscan.io/collection/${collectionId}`">{{ collectionName }}</a>
+                     </div>
+                     <div class="font-weight-bold text-h6">Update Authority</div>
+-                    <div><a href="https://solscan.io/account/yootn8Kf22CQczC732psp7qEqxwPGSDQCFZHkzoXp25"
+-                            target="_blank">yootn8Kf22CQczC732psp7qEqxwPGSDQCFZHkzoXp25</a></div>
++                    <div><a :href="`https://solscan.io/account/${updateAuthority}`"
++                            target="_blank">{{ updateAuthority }}</a></div>
+                 </template>
+             </v-card>
+             <v-card class="my-2">
+@@ -99,15 +99,49 @@
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                                :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+-                    <Column field="mint" header="Mint"></Column>
+-                    <Column field="price" header="Price"></Column>
+-                    <Column field="market_fee" header="Market Fee"></Column>
+-                    <Column field="time" header="Time"></Column>
+-                    <Column field="royalty_fee" header="Royalty Fee"></Column>
+-                    <Column field="buyer" header="Buyer"></Column>
+-                    <Column field="seller" header="Seller"></Column>
+-                    <Column field="marketplace" header="Marketplace"></Column>
+-                    <Column field="signature" header="Signature"></Column>
++                        <Column field="mint" header="Mint">
++                            <template #body="{data}">
++                            <a :href="`https://solscan.io/token/${data.mint}`" target="_blank">{{ truncateInTheMiddle(data.mint,10) }}</a>
++                            </template>
++                        </Column>
++                        <Column field="price" header="Price">
++                            <template #body="{data}">
++                                {{ lamportsToSol(data.price) }} SOL
++                            </template>
++                        </Column>
++                        <Column field="market_fee" header="Market Fee">
++                            <template #body="{data}">
++                                {{ lamportsToSol(data.market_fee) }} SOL
++                            </template>
++                        </Column>
++                        <Column field="time" header="Time">
++                            <template #body="{data}">
++                                {{ ISOdateToReadable(data.time) }}
++                            </template>
++                        </Column>
++                        <Column field="royalty_fee" header="Royalty Fee">
++                            <template #body="{data}">
++                                {{ lamportsToSol(data.royalty_fee) }} SOL
++                            </template>
++                        </Column>
++                        <Column field="buyer" header="Buyer">
++                            <template #body="{data}">
++                            <a :href="`https://solscan.io/account/${data.buyer}`" target="_blank">{{ truncateInTheMiddle(data.buyer,10) }}</a>
++
++                            </template>
++                        </Column>
++                        <Column field="seller" header="Seller">
++                            <template #body="{data}">
++                            <a :href="`https://solscan.io/account/${data.seller}`" target="_blank">{{ truncateInTheMiddle(data.seller,10) }}</a>
++                            </template>
++                        </Column>
++                        <Column field="marketplace" header="Marketplace"></Column>
++                        <Column field="signature" header="Signature">
++                            <template #body="{data}">
++                            <a :href="`https://solscan.io/tx/${data.signature}`" target="_blank">{{ truncateInTheMiddle(data.signature,10) }}</a>
++
++                            </template>
++                        </Column>
+ 
+                     </DataTable>
+                 </template>
+@@ -121,50 +155,38 @@ import {
+   getNFTCollectionId,
+   getNFTMetadataSolscan,
+   getNFTRoyalty,
+-  getNFTUpdateAuthorityAndCollectionName
++  getNFTUpdateAuthorityAndCollectionName,
++  getImageFromURI
+ } from '../../services'
+-import {lamportsToSol, ISOdateToReadable} from "../../utils"
++import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle} from "../../utils"
+ 
+ const loading = ref(false)
+-const NFTid = ref("")
++const NFTId = ref("")
+ const collectionName = ref("")
+ const collectionId = ref("")
+ const royaltyData = ref([])
+ const NFTMetadata = ref({})
++const updateAuthority = ref("")
++const image = ref("")
+ 
+ async function searchNFT() {
+   loading.value = true
+   try {
+-    const {collectionId: CI, collectionName: CN} = await getNFTCollectionId(NFTid.value)
+-    collectionName.value = CN
++    const {collectionId: CI} = await getNFTCollectionId(NFTId.value)
++
+     collectionId.value = CI
+-    const {updateAuthority, collectionName} = await getNFTUpdateAuthorityAndCollectionName(NFTid.value)
+-    const _NFTMetadata = await getNFTMetadataSolscan(NFTid.value)
++    const {
++      updateAuthority: _updateAuthority,
++      collectionName: _collectionName,
++      image: _image
++    } = await getNFTUpdateAuthorityAndCollectionName(NFTId.value)
++    updateAuthority.value = _updateAuthority
++    collectionName.value = _collectionName
++    image.value = await getImageFromURI(_image)
++    const _NFTMetadata = await getNFTMetadataSolscan(NFTId.value)
+     NFTMetadata.value = _NFTMetadata
+-    const _royaltyData = await getNFTRoyalty(updateAuthority, collectionName)
+-    royaltyData.value = _royaltyData.map(({
+-      mint,
+-      price,
+-      buyer,
+-      seller,
+-      marketplace,
+-      signature,
+-      market_fee,
+-      royalty_fee,
+-      time
+-    }) => {
+-      return {
+-        mint,
+-        price: `${lamportsToSol(price)} SOL`,
+-        buyer,
+-        seller,
+-        marketplace,
+-        signature,
+-        market_fee: `${lamportsToSol(market_fee)} SOL`,
+-        royalty_fee: `${lamportsToSol(royalty_fee)} SOL`,
+-        time: ISOdateToReadable(time)
+-      }
+-    })
++    const _royaltyData = await getNFTRoyalty(_updateAuthority, _collectionName)
++  royaltyData.value = _royaltyData
+     loading.value = false
+   } catch (e) {
+     console.log(e.message)
+diff --git a/utils/index.js b/utils/index.js
+index 6e93aec..fa8d0fb 100644
+--- a/utils/index.js
++++ b/utils/index.js
+@@ -27,11 +27,36 @@ export function getCollectionName(collection_name) {
+ }
+ 
+ export function lamportsToSol(lamports) {
+-  return lamports / 100000000
++  return lamports / 1000000000
+ }
+ 
+ export function ISOdateToReadable(isoTimestamp) {
+-  const date = new Date(isoTimestamp)
+-  return date.toLocaleString("day month year time")
++    const date = new Date(isoTimestamp);
++    const options = {
++        weekday: "long",
++    year: "numeric",
++    month: "long",
++    day: "numeric",
++    hour: "numeric",
++    minute: "numeric",
++    second: "numeric"
++    };
++    const readableDate = date.toLocaleDateString("en-US", options);
++    return readableDate;
+ 
++}
++
++export  function truncateInTheMiddle(fullStr, strLen, separator) {
++    if (fullStr.length <= strLen) return fullStr;
++
++    separator = separator || '...';
++
++    const sepLen = separator.length,
++        charsToShow = strLen - sepLen,
++        frontChars = Math.ceil(charsToShow/2),
++        backChars = Math.floor(charsToShow/2);
++
++    return fullStr.substr(0, frontChars) +
++    separator +
++    fullStr.substr(fullStr.length - backChars);
+ }
+\ No newline at end of file

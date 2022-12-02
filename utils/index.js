@@ -27,11 +27,36 @@ export function getCollectionName(collection_name) {
 }
 
 export function lamportsToSol(lamports) {
-  return lamports / 100000000
+  return lamports / 1000000000
 }
 
 export function ISOdateToReadable(isoTimestamp) {
-  const date = new Date(isoTimestamp)
-  return date.toLocaleString("day month year time")
+    const date = new Date(isoTimestamp);
+    const options = {
+        weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric"
+    };
+    const readableDate = date.toLocaleDateString("en-US", options);
+    return readableDate;
 
+}
+
+export  function truncateInTheMiddle(fullStr, strLen, separator) {
+    if (fullStr.length <= strLen) return fullStr;
+
+    separator = separator || '...';
+
+    const sepLen = separator.length,
+        charsToShow = strLen - sepLen,
+        frontChars = Math.ceil(charsToShow/2),
+        backChars = Math.floor(charsToShow/2);
+
+    return fullStr.substr(0, frontChars) +
+    separator +
+    fullStr.substr(fullStr.length - backChars);
 }

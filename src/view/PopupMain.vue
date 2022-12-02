@@ -55,7 +55,7 @@
                 Last Sales Royalty
             </template>
             <template v-slot:text>
-                {{ royalty.royalty_fee }}
+            {{ lastSalesRoyalty }} SOL
             </template>
 
         </v-card>
@@ -78,14 +78,14 @@
 <script setup>
 import {onMounted, ref} from "vue"
 import {getNFTMetadataSolscan, getNFTRoyalty,  getNFTUpdateAuthorityAndCollectionName} from "../../services"
-import {getNFTIdFromURL} from "../../utils"
+import {getNFTIdFromURL,lamportsToSol} from "../../utils"
 
 const NFTId = ref("")
 const NFTMetadata = ref({})
 const loading = ref(false)
 const royalty = ref({})
 const isNFT = ref(false)
-
+const lastSalesRoyalty=ref(0)
 onMounted(async () => {
   let queryOptions = {active: true, currentWindow: true}
   let [tab] = await chrome.tabs.query(queryOptions)
@@ -124,6 +124,7 @@ async function checkNFT() {
         NFTId.value = tempNFTId
         NFTMetadata.value = NFTMetadata2
         royalty.value = royaltyData.length > 0 ? royaltyData[0] : {}
+      lastSalesRoyalty.value=lamportsToSol(royalty.value.royalty_fee);
         loading.value = false
       } catch (e) {
         console.log(e.message)

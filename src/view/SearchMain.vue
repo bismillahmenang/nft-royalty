@@ -91,7 +91,7 @@
             </v-card>
             <v-card class="my-2">
                 <template v-slot:title>
-                    List All Sales Transaction
+                    List All Sales Transaction From {{startDate}} to {{endDate}}
                 </template>
 
                 <template v-slot:text>

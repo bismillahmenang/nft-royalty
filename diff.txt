@@ -465,3 +465,50 @@ index 6e93aec..fa8d0fb 100644
 +    fullStr.substr(fullStr.length - backChars);
  }
 \ No newline at end of file
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index 4298cf7..2f43673 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -91,7 +91,7 @@
+             </v-card>
+             <v-card class="my-2">
+                 <template v-slot:title>
+-                    List All Sales Transaction
++                    List All Sales Transaction From {{startDate}} to {{endDate}}
+                 </template>
+ 
+                 <template v-slot:text>
+diff --git a/diff.txt b/diff.txt
+index fb5eb80..2f5054e 100644
+--- a/diff.txt
++++ b/diff.txt
+@@ -465,3 +465,16 @@ index 6e93aec..fa8d0fb 100644
+ +    fullStr.substr(fullStr.length - backChars);
+  }
+ \ No newline at end of file
++diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
++index 4298cf7..2f43673 100644
++--- a/src/view/SearchMain.vue
+++++ b/src/view/SearchMain.vue
++@@ -91,7 +91,7 @@
++             </v-card>
++             <v-card class="my-2">
++                 <template v-slot:title>
++-                    List All Sales Transaction
+++                    List All Sales Transaction From {{startDate}} to {{endDate}}
++                 </template>
++ 
++                 <template v-slot:text>
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index 4298cf7..2f43673 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -91,7 +91,7 @@
+             </v-card>
+             <v-card class="my-2">
+                 <template v-slot:title>
+-                    List All Sales Transaction
++                    List All Sales Transaction From {{startDate}} to {{endDate}}
+                 </template>
+ 
+                 <template v-slot:text>

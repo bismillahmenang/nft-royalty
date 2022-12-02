@@ -1,0 +1,90 @@
+diff --git a/src/view/SearchMain.vue b/src/view/SearchMain.vue
+index 57de517..76fdfa3 100644
+--- a/src/view/SearchMain.vue
++++ b/src/view/SearchMain.vue
+@@ -6,7 +6,7 @@
+                     <v-text-field
+                             v-model="NFTId"
+                             clearable
+-                            label="Search NFT"
++                            label="Input Solana Mint Address Here"
+                             type="text"
+                             variant="outlined"
+                     >
+@@ -99,10 +99,15 @@
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                                :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+-                        <Column field="name" header="Name"></Column>
+-                        <Column field="country.name" header="Country"></Column>
+-                        <Column field="company" header="Company"></Column>
+-                        <Column field="representative.name" header="Representative"></Column>
++                    <Column field="mint" header="Mint"></Column>
++                    <Column field="price" header="Price"></Column>
++                    <Column field="market_fee" header="Market Fee"></Column>
++                    <Column field="time" header="Time"></Column>
++                    <Column field="royalty_fee" header="Royalty Fee"></Column>
++                    <Column field="buyer" header="Buyer"></Column>
++                    <Column field="seller" header="Seller"></Column>
++                    <Column field="marketplace" header="Marketplace"></Column>
++                    <Column field="signature" header="Signature"></Column>
+ 
+                     </DataTable>
+                 </template>
+@@ -118,25 +123,48 @@ import {
+   getNFTRoyalty,
+   getNFTUpdateAuthorityAndCollectionName
+ } from '../../services'
+-import {lamportsToSol,ISOdateToReadable} from "../../utils"
++import {lamportsToSol, ISOdateToReadable} from "../../utils"
+ 
+ const loading = ref(false)
+ const NFTid = ref("")
+ const collectionName = ref("")
+ const collectionId = ref("")
+ const royaltyData = ref([])
++const NFTMetadata = ref({})
+ 
+ async function searchNFT() {
+   loading.value = true
+   try {
+     const {collectionId: CI, collectionName: CN} = await getNFTCollectionId(NFTid.value)
+-    collectionName.value = CN;
+-    collectionId.value = CI;
+-  const {updateAuthority, collectionName} = await getNFTUpdateAuthorityAndCollectionName(NFTid.value)
+-  const _NFTMetadata = await getNFTMetadataSolscan(NFTid.value)
+-  const _royaltyData = await getNFTRoyalty(updateAuthority, collectionName)
+-  royaltyData.value=_royaltyData.map(({})=>{
+-  })
++    collectionName.value = CN
++    collectionId.value = CI
++    const {updateAuthority, collectionName} = await getNFTUpdateAuthorityAndCollectionName(NFTid.value)
++    const _NFTMetadata = await getNFTMetadataSolscan(NFTid.value)
++    NFTMetadata.value = _NFTMetadata
++    const _royaltyData = await getNFTRoyalty(updateAuthority, collectionName)
++    royaltyData.value = _royaltyData.map(({
++      mint,
++      price,
++      buyer,
++      seller,
++      marketplace,
++      signature,
++      market_fee,
++      royalty_fee,
++      time
++    }) => {
++      return {
++        mint,
++        price: `${lamportsToSol(price)} SOL`,
++        buyer,
++        seller,
++        marketplace,
++        signature,
++        market_fee: `${lamportsToSol(market_fee)} SOL`,
++        royalty_fee: `${lamportsToSol(royalty_fee)} SOL`,
++        time: ISOdateToReadable(time)
++      }
++    })
+     loading.value = false
+   } catch (e) {
+     console.log(e.message)

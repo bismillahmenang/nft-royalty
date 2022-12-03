@@ -12,6 +12,8 @@
     "dependencies": {
              "deta": "latest",
              "express": "latest",
-        "axios":"latest"
+        "axios":"latest",
+        "cors": "latest",
+        "node-fetch":"2"
     }
 }

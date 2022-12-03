@@ -154,7 +154,7 @@ import {ref} from 'vue'
 import {
   getNFTCollectionId,
   getNFTMetadataSolscan,
-  getNFTRoyalty,
+getNFTRoyaltyFromDeta,
   getNFTUpdateAuthorityAndCollectionName,
   getImageFromURI
 } from '../../services'
@@ -185,7 +185,7 @@ async function searchNFT() {
     image.value = await getImageFromURI(_image)
     const _NFTMetadata = await getNFTMetadataSolscan(NFTId.value)
     NFTMetadata.value = _NFTMetadata
-    const _royaltyData = await getNFTRoyalty(_updateAuthority, _collectionName)
+  const _royaltyData = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName,NFTId.value)
   royaltyData.value = _royaltyData
     loading.value = false
   } catch (e) {

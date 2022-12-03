@@ -23,6 +23,20 @@ export async function getNFTRoyalty(updateAuthority, symbol) {
   const res = await fetch(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${symbol.toLowerCase()}`)
   return res.json()
 }
+
+export async function getNFTRoyaltyFromDeta(updateAuthority, symbol,mintAddress){
+    const res = await fetch('https://clggjw.deta.dev/coral', {
+        method: 'POST',
+        body: JSON.stringify({
+            updateAuthority, symbol:symbol.toLowerCase().split(" ").join(" ","_"),mintAddress
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return res.json()
+}
 export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
     const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
     const data=await res.json();

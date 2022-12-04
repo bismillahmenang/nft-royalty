@@ -156,7 +156,8 @@ import {
   getNFTMetadataSolscan,
 getNFTRoyaltyFromDeta,
   getNFTUpdateAuthorityAndCollectionName,
-  getImageFromURI
+  getImageFromURI,
+getNFTRoyalty
 } from '../../services'
 import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle} from "../../utils"
 
@@ -185,8 +186,11 @@ async function searchNFT() {
     image.value = await getImageFromURI(_image)
     const _NFTMetadata = await getNFTMetadataSolscan(NFTId.value)
     NFTMetadata.value = _NFTMetadata
-  const _royaltyData = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName,NFTId.value)
-  royaltyData.value = _royaltyData
+  let _royaltyData = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName,NFTId.value)
+  if(_royaltyData.length===0){
+  _royaltyData=await getNFTRoyalty(_updateAuthority, _collectionName)
+  }
+  royaltyData.value = _royaltyData.filter(({mint})=>mint===NFTId.value)
     loading.value = false
   } catch (e) {
     console.log(e.message)

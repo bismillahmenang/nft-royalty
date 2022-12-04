@@ -20,7 +20,7 @@ export async function getNFTMetadataSolscan(nftAddress){
 
 }
 export async function getNFTRoyalty(updateAuthority, symbol) {
-  const res = await fetch(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${symbol.toLowerCase()}`)
+    const res = await fetch(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${symbol.toLowerCase().split(" ").join(" ","_")}`)
   return res.json()
 }
 

@@ -28,48 +28,69 @@ app.post('/coral', async (req, res) => {
 
 })
 
-async function getData(updateAuthority, symbol, before) {
-  const {data} = await axios.get(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${symbol}${before ? "&before=" + before : ""}`)
-  return data
+function setTimeToZero(timestamp) {
+    // Parse the timestamp string using the Date object
+    var date = new Date(timestamp);
+
+    // Set the hours, minutes, and seconds to 0 using the setUTCHours, setUTCMinutes, and setUTCSeconds methods
+    date.setUTCHours(0);
+    date.setUTCMinutes(0);
+    date.setUTCSeconds(0);
+
+    // Convert the date back to a string in ISO format using the toISOString method
+    return encodeURIComponent(date.toISOString().replace(".000Z", ""));
 }
+async function getData(updateAuthority, symbol, before) {
+    //    console.log(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?limit=10&update_authority=${updateAuthority}&collection_symbol=${symbol}${before ? "&before=" + before : ""}`)
+    const {data} = await axios.get(`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${symbol}${before ? "&before=" + setTimeToZero(before) : ""}`)
+    //    console.log(data)
+    return data
+}
+async function cobaCron(){
+    let ress = await collectionList.fetch({})
+    let allItems = ress.items
 
-app.lib.cron(async () => {
-  let ress = await collectionList.fetch({})
-  let allItems = ress.items
 
-  // continue fetching until last is not seen
-  while (ress.last) {
-    ress = await collectionList.fetch({}, {last: ress.last})
-    allItems = allItems.concat(ress.items)
+    // continue fetching until last is not seen
+    while (ress.last) {
+        ress = await collectionList.fetch({}, {last: ress.last})
+        allItems = allItems.concat(ress.items)
 
-  }
-  if (ress.length === 0) return
-  for (let i = 0; i < allItems.length; i++) {
-    let check = await royalty.fetch({collectionName: allItems[i].symbol})
-    const data = await getData(allItems[i].updateAuthority, allItems[i].symbol)
-    let data2 = data
-    if (check.length === 0) {
-      while (data2.length > 0) {
-        const date = data[data.length - 1].time
-        data2 = await getData(allItems[i].updateAuthority, allItems[i].symbol, date)
-        if (data2.length > 0) {
-          data.concat(data2)
-          break
-        }
-      }
-      data.forEach(async (item) => {
-        const {signature} = item
-        await royalty.put({...item, collectionName: allItems[i].symbol}, signature)
-      })
-    } else {
-      data.forEach(async (item) => {
-        const {signature} = item
-        await royalty.put({...item, collectionName: allItems[i].symbol}, signature)
-      })
     }
+    allItems=allItems.filter(({updateAuthority,symbol})=>updateAuthority&&symbol)
 
-  }
-  return ress.length
+    if (allItems.length === 0) return
+    for (let i = 0; i < allItems.length; i++) {
+         let data = await getData(allItems[i].updateAuthority, allItems[i].symbol)
+        let data2 = data
+
+
+
+            while (data2.length > 0) {
+                const date = data2[data2.length - 1].time
+                console.log(setTimeToZero(date))
+
+                data2 = await getData(allItems[i].updateAuthority, allItems[i].symbol, date)
+
+                if (data2.length > 0) {
+                    data=data.concat(data2)
+
+                }else{
+                    break;
+                }
+            }
+
+            data.forEach(async (item) => {
+                const {signature} = item
+                await royalty.put({...item, collectionName: allItems[i].symbol}, signature)
+            })
+
+
+    }
+    return ress.length
+}
+app.lib.cron(async () => {
+await cobaCron()
 })
 
 module.exports = app

@@ -91,7 +91,7 @@
             </v-card>
             <v-card class="my-2">
                 <template v-slot:title>
-                    List All Sales Transaction From {{startDate}} to {{endDate}}
+                    List All Sales Transaction From {{ startDate }} to {{ endDate }}
                 </template>
 
                 <template v-slot:text>
@@ -101,7 +101,8 @@
                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
                         <Column field="mint" header="Mint">
                             <template #body="{data}">
-                            <a :href="`https://solscan.io/token/${data.mint}`" target="_blank">{{ truncateInTheMiddle(data.mint,10) }}</a>
+                                <a :href="`https://solscan.io/token/${data.mint}`"
+                                   target="_blank">{{ truncateInTheMiddle(data.mint, 10) }}</a>
                             </template>
                         </Column>
                         <Column field="price" header="Price">
@@ -126,19 +127,22 @@
                         </Column>
                         <Column field="buyer" header="Buyer">
                             <template #body="{data}">
-                            <a :href="`https://solscan.io/account/${data.buyer}`" target="_blank">{{ truncateInTheMiddle(data.buyer,10) }}</a>
+                                <a :href="`https://solscan.io/account/${data.buyer}`"
+                                   target="_blank">{{ truncateInTheMiddle(data.buyer, 10) }}</a>
 
                             </template>
                         </Column>
                         <Column field="seller" header="Seller">
                             <template #body="{data}">
-                            <a :href="`https://solscan.io/account/${data.seller}`" target="_blank">{{ truncateInTheMiddle(data.seller,10) }}</a>
+                                <a :href="`https://solscan.io/account/${data.seller}`"
+                                   target="_blank">{{ truncateInTheMiddle(data.seller, 10) }}</a>
                             </template>
                         </Column>
                         <Column field="marketplace" header="Marketplace"></Column>
                         <Column field="signature" header="Signature">
                             <template #body="{data}">
-                            <a :href="`https://solscan.io/tx/${data.signature}`" target="_blank">{{ truncateInTheMiddle(data.signature,10) }}</a>
+                                <a :href="`https://solscan.io/tx/${data.signature}`"
+                                   target="_blank">{{ truncateInTheMiddle(data.signature, 10) }}</a>
 
                             </template>
                         </Column>
@@ -154,12 +158,12 @@ import {ref} from 'vue'
 import {
   getNFTCollectionId,
   getNFTMetadataSolscan,
-getNFTRoyaltyFromDeta,
+  getNFTRoyaltyFromDeta,
   getNFTUpdateAuthorityAndCollectionName,
   getImageFromURI,
-getNFTRoyalty
+  getNFTRoyalty
 } from '../../services'
-import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle} from "../../utils"
+import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle, isoToDate} from "../../utils"
 
 const loading = ref(false)
 const NFTId = ref("")
@@ -169,6 +173,8 @@ const royaltyData = ref([])
 const NFTMetadata = ref({})
 const updateAuthority = ref("")
 const image = ref("")
+const startDate = ref("")
+const endDate = ref("")
 
 async function searchNFT() {
   loading.value = true
@@ -186,11 +192,21 @@ async function searchNFT() {
     image.value = await getImageFromURI(_image)
     const _NFTMetadata = await getNFTMetadataSolscan(NFTId.value)
     NFTMetadata.value = _NFTMetadata
-  let _royaltyData = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName,NFTId.value)
-  if(_royaltyData.length===0){
-  _royaltyData=await getNFTRoyalty(_updateAuthority, _collectionName)
-  }
-  royaltyData.value = _royaltyData.filter(({mint})=>mint===NFTId.value)
+    let _royaltyData = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName, NFTId.value)
+    if (_royaltyData.items.length === 0) {
+    _royaltyData={}
+    _royaltyData.items=[]
+    _royaltyData.items = await getNFTRoyalty(_updateAuthority, _collectionName)
+    }else{
+    while(_royaltyData.last){
+    let royal=await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName, NFTId.value,_royaltyData.last)
+    _royaltyData.items=_royaltyData.items.concat(royal.items);
+    _royaltyData.last=royal.last;
+    }
+    }
+    startDate.value = _royaltyData.items.length > 0 ? isoToDate(_royaltyData.items[_royaltyData.items.length - 1].time) : ""
+    endDate.value = _royaltyData.items.length > 0 ? isoToDate(_royaltyData.items[0].time) : ""
+    royaltyData.value = _royaltyData.items
     loading.value = false
   } catch (e) {
     console.log(e.message)

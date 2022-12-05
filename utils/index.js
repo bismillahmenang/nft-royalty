@@ -60,3 +60,8 @@ export  function truncateInTheMiddle(fullStr, strLen, separator) {
     separator +
     fullStr.substr(fullStr.length - backChars);
 }
+
+export function isoToDate(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString();
+}

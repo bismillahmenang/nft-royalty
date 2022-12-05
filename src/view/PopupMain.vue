@@ -29,7 +29,7 @@
                 NFT Name
             </template>
             <template v-slot:text>
-                {{ NFTMetadata.name }}
+                {{ NFTMetadata.data.name }}
             </template>
 
         </v-card>

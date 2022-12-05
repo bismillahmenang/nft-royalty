@@ -10,20 +10,19 @@ const collectionList = deta.Base('collection_list')
 const royalty = deta.Base('royalty')
 app.post('/coral', async (req, res) => {
   try {
-    const {updateAuthority, symbol, mintAddress} = req.body
+    const {updateAuthority, symbol, last} = req.body
     await collectionList.put({updateAuthority, symbol}, updateAuthority)
-    let ress = await royalty.fetch({mint: mintAddress, collectionName: symbol})
-    let allItems = ress.items
+      let ress={items:[]}
+      if(!last){
+          ress = await royalty.fetch({ collectionName: symbol})
+      }else{
+          ress = await royalty.fetch({ collectionName: symbol}, {last})
+      }
 
-    // continue fetching until last is not seen
-    while (ress.last) {
-      ress = await royalty.fetch({mint: mintAddress, collectionName: symbol}, {last: ress.last})
-      allItems = allItems.concat(ress.items)
-    }
-      
-    return res.json(allItems)
+
+    return res.json(ress)
   } catch (e) {
-    return res.json(e.message)
+      return res.json({items:[]})
   }
 
 })

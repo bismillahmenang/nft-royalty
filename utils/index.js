@@ -65,3 +65,24 @@ export function isoToDate(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString();
 }
+
+export function sortDate(arr){
+    return arr.sort((a, b) => {
+        // Convert the timestamps to Date objects
+    var dateA = new Date(a.time);
+    var dateB = new Date(b.time);
+
+    // Compare the dates and return either -1, 0, or 1
+    // depending on whether dateA is before, the same as,
+    // or after dateB
+    if (dateA < dateB) return -1;
+    if (dateA > dateB) return 1;
+    return 0;
+    });
+}
+
+
+// Sort the array in ascending order by timestamp
+
+
+

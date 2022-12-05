@@ -11,6 +11,7 @@ import 'primeicons/primeicons.css'
 import PrimeVue from 'primevue/config';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import InputText from 'primevue/inputtext';
 const vuetify = createVuetify({
     components,
     directives,
@@ -21,4 +22,5 @@ app.use(vuetify)
 app.use(PrimeVue);
 app.component('DataTable', DataTable);
 app.component('Column', Column);
+app.component('InputText', InputText);
 app.mount('#app');

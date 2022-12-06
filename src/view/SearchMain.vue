@@ -41,7 +41,9 @@
                     </v-text-field>
                 </v-col>
             </v-row>
-            <div class="text-center">NFT not Found</div>
+        <div class="text-center my-5 text-h5" v-if="isEmpty(NFTMetadata) && search && !loading">NFT not Found</div>
+        <div v-else-if="!isEmpty(NFTMetadata) && !loading">
+            <div class="text-center text-h3 my-5">NFT {{ NFTMetadata?.data?.name }} Royalty Detail</div>
             <v-card>
                 <template v-slot:title>
                     NFT Detail
@@ -90,17 +92,43 @@
                             target="_blank">{{ updateAuthority }}</a></div>
                 </template>
             </v-card>
-        <v-card class="my-2">
-        <template v-slot:title>
-        Total royalty for NFT {{ NFTMetadata?.data?.name }} from {{ startDate }} to {{ endDate }}
-        </template>
-        <template v-slot:text>
-        {{lamportsToSol(totalRoyalty)}} SOL
-        </template>
-        </v-card>
             <v-card class="my-2">
                 <template v-slot:title>
-                All Transactions sales of collection {{ collectionName }} from {{ startDate }} to {{ endDate }}
+                    Total royalty for NFT {{ NFTMetadata?.data?.name }} from {{ startDate }} to {{ endDate }}
+                </template>
+                <template v-slot:text>
+                <span class="text-h5 text-bold"> {{ lamportsToSol(totalRoyalty) }} SOL</span>
+                </template>
+            </v-card>
+            <v-card class="my-2">
+                <template v-slot:title>
+                    List of address who pay royalty to NFT {{ NFTMetadata?.data?.name }} from {{ startDate }} to
+                    {{ endDate }}
+                </template>
+                <template v-slot:text>
+                    <div v-if="royaltyGiver.length===0">No one pay royalty</div>
+                    <DataTable v-else :value="royaltyGiver" :paginator="true" :rows="5"
+                               paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                               :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
+                               currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+                        <Column field="buyer" header="Buyer address" :sortable="true">
+                            <template #body="{data}">
+                                <a :href="`https://solscan.io/account/${data.buyer}`"
+                                   target="_blank">{{ truncateInTheMiddle(data.buyer, 10) }}</a>
+                            </template>
+                        </Column>
+                        <Column field="royalty_fee" header="Royalty Fee" :sortable="true">
+                            <template #body="{data}">
+                                {{ lamportsToSol(data.royalty_fee) }} SOL
+                            </template>
+                        </Column>
+                    </DataTable>
+                </template>
+            </v-card>
+            <div class="text-center text-h3 my-5">NFT Collections {{ collectionName }} Royalty Detail</div>
+            <v-card class="my-2">
+                <template v-slot:title>
+                    All Transactions sales of collection {{ collectionName }} from {{ startDate }} to {{ endDate }}
                 </template>
 
                 <template v-slot:text>
@@ -109,47 +137,47 @@
                                :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
 
-                    <Column field="mint" header="Mint" :sortable="true">
+                        <Column field="mint" header="Mint" :sortable="true">
                             <template #body="{data}">
                                 <a :href="`https://solscan.io/token/${data.mint}`"
                                    target="_blank">{{ truncateInTheMiddle(data.mint, 10) }}</a>
                             </template>
                         </Column>
-                    <Column field="price" header="Price" :sortable="true">
+                        <Column field="price" header="Price" :sortable="true">
                             <template #body="{data}">
                                 {{ lamportsToSol(data.price) }} SOL
                             </template>
                         </Column>
-                    <Column field="market_fee" header="Market Fee" :sortable="true">
+                        <Column field="market_fee" header="Market Fee" :sortable="true">
                             <template #body="{data}">
                                 {{ lamportsToSol(data.market_fee) }} SOL
                             </template>
                         </Column>
-                    <Column field="time" header="Time" :sortable="true">
+                        <Column field="time" header="Time" :sortable="true">
                             <template #body="{data}">
                                 {{ ISOdateToReadable(data.time) }}
                             </template>
                         </Column>
-                    <Column field="royalty_fee" header="Royalty Fee" :sortable="true">
+                        <Column field="royalty_fee" header="Royalty Fee" :sortable="true">
                             <template #body="{data}">
                                 {{ lamportsToSol(data.royalty_fee) }} SOL
                             </template>
                         </Column>
-                    <Column field="buyer" header="Buyer" :sortable="true">
+                        <Column field="buyer" header="Buyer" :sortable="true">
                             <template #body="{data}">
                                 <a :href="`https://solscan.io/account/${data.buyer}`"
                                    target="_blank">{{ truncateInTheMiddle(data.buyer, 10) }}</a>
 
                             </template>
                         </Column>
-                    <Column field="seller" header="Seller" :sortable="true">
+                        <Column field="seller" header="Seller" :sortable="true">
                             <template #body="{data}">
                                 <a :href="`https://solscan.io/account/${data.seller}`"
                                    target="_blank">{{ truncateInTheMiddle(data.seller, 10) }}</a>
                             </template>
                         </Column>
-                    <Column field="marketplace" header="Marketplace" :sortable="true"></Column>
-                    <Column field="signature" header="Signature" :sortable="true">
+                        <Column field="marketplace" header="Marketplace" :sortable="true"></Column>
+                        <Column field="signature" header="Signature" :sortable="true">
                             <template #body="{data}">
                                 <a :href="`https://solscan.io/tx/${data.signature}`"
                                    target="_blank">{{ truncateInTheMiddle(data.signature, 10) }}</a>
@@ -163,6 +191,58 @@
                     Cube API</a>
                 </template>
             </v-card>
+        <v-card class="my-2">
+        <template v-slot:title>
+        Address that paid royalty to {{ collectionName }} collections from {{ startDate }} to {{ endDate }}
+        </template>
+        <template v-slot:text>
+        <div v-if="royaltyCollectionGiver.length===0">No one pay royalty</div>
+        <DataTable v-else :value="royaltyCollectionGiver" :paginator="true" :rows="5"
+        paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+        :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
+        <Column field="mint" header="Mint Address" :sortable="true">
+        <template #body="{data}">
+        <a :href="`https://solscan.io/token/${data.mint}`"
+        target="_blank">{{ truncateInTheMiddle(data.mint, 10) }}</a>
+        </template>
+        </Column>
+        <Column field="price" header="Price" :sortable="true">
+        <template #body="{data}">
+        {{ lamportsToSol(data.price) }} SOL
+        </template>
+        </Column>
+        <Column field="buyer" header="Buyer address" :sortable="true">
+        <template #body="{data}">
+        <a :href="`https://solscan.io/account/${data.buyer}`"
+        target="_blank">{{ truncateInTheMiddle(data.buyer, 10) }}</a>
+        </template>
+        </Column>
+        <Column field="royalty_fee" header="Royalty Fee" :sortable="true">
+        <template #body="{data}">
+        {{ lamportsToSol(data.royalty_fee) }} SOL
+        </template>
+        </Column>
+        <Column field="signature" header="Signature" :sortable="true">
+        <template #body="{data}">
+        <a :href="`https://solscan.io/tx/${data.signature}`"
+        target="_blank">{{ truncateInTheMiddle(data.signature, 10) }}</a>
+
+        </template>
+        </Column>
+        <Column field="marketplace" header="Marketplace" :sortable="true"></Column>
+        </DataTable>
+        </template>
+        </v-card>
+        <v-card class="my-2">
+        <template v-slot:title>
+        Total royalty paid to {{ collectionName }} collections from {{ startDate }} to {{ endDate }}
+        </template>
+        <template v-slot:text >
+        <span class="text-h5 text-bold">{{ lamportsToSol(totalCollectionsRoyalty) }} SOL</span>
+        </template>
+        </v-card>
+            </div>
         </v-container>
     </v-form>
 </template>
@@ -177,7 +257,8 @@ import {
   getNFTRoyalty
 } from '../../services'
 import {lamportsToSol, ISOdateToReadable, truncateInTheMiddle, isoToDate, sortDate} from "../../utils"
-const totalRoyalty=ref(0)
+const search=ref(false)
+const totalRoyalty = ref(0)
 const loading = ref(false)
 const NFTId = ref("")
 const collectionName = ref("")
@@ -190,6 +271,12 @@ const startDate = ref("")
 const endDate = ref("")
 const aaa = ref("")
 const royaltyFilter = ref([])
+const royaltyGiver = ref([])
+const royaltyCollectionGiver = ref([])
+const totalCollectionsRoyalty = ref([])
+function isEmpty(obj) {
+return Object.getOwnPropertyNames(obj).length === 0;
+}
 onMounted(async () => {
   let uri = window.location.search.substring(1)
   let params = new URLSearchParams(uri)
@@ -233,15 +320,25 @@ async function searchNFT() {
     endDate.value = _royaltyData.items.length > 0 ? isoToDate(_royaltyData.items[_royaltyData.items.length - 1].time) : ""
     startDate.value = _royaltyData.items.length > 0 ? isoToDate(_royaltyData.items[0].time) : ""
     royaltyData.value = _royaltyData.items
-  royaltyFilter.value = _royaltyData.items
-  totalRoyalty.value=royaltyData.value.filter(({mint})=>mint===NFTId.value).reduce((acc, obj) => {
-  let newObj = acc+obj.royalty_fee;
-  return newObj;
-  }, 0);
+    royaltyFilter.value = _royaltyData.items
+    totalRoyalty.value = royaltyData.value.filter(({mint}) => mint === NFTId.value)
+      .reduce((acc, obj) => {
+        let newObj = acc + obj.royalty_fee
+        return newObj
+      }, 0)
+    royaltyGiver.value = royaltyData.value.filter(({royalty_fee, mint}) => royalty_fee > 0 && mint === NFTId.value)
+  royaltyCollectionGiver.value=royaltyData.value.filter(({royalty_fee}) => royalty_fee > 0 )
+  totalCollectionsRoyalty.value=royaltyData.value.filter(({royalty_fee}) => royalty_fee > 0 )
+  .reduce((acc, obj) => {
+  let newObj = acc + obj.royalty_fee
+  return newObj
+  }, 0)
     loading.value = false
+  search.value=false
   } catch (e) {
     console.log(e.message)
     loading.value = false
+  search.value=true
   }
 
 

@@ -1,7 +1,7 @@
 const {App, Deta} = require('deta')
 const express = require('express')
 const app = App(express())
-const deta = Deta('c08piu78_Ho49cFbttrmc1vHW59rM89F6duMjCjh2')
+const deta = Deta(process.env.detaid)
 const cors = require("cors")
 app.use(cors())
 app.use(express.json())

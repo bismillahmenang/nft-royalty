@@ -6,7 +6,7 @@
                     <v-text-field
                             v-model="NFTId"
                             clearable
-                            label="Input Solana Mint Address Here"
+                            label="Input Solana NFT Token Address Here"
                             type="text"
                             variant="outlined"
                             :disabled="loading"
@@ -80,7 +80,7 @@
 
                     <div class="font-weight-bold text-h6">Name</div>
                     <div>{{ NFTMetadata?.data?.name }}</div>
-                    <div class="font-weight-bold text-h6">Mint Address</div>
+                    <div class="font-weight-bold text-h6">Token Address</div>
                     <div><a :href="`https://solscan.io/token/${NFTId}`"
                             target="_blank">{{ NFTId }}</a></div>
                     <div class="font-weight-bold text-h6">Collection Name</div>
@@ -137,7 +137,7 @@
                                :rowsPerPageOptions="[5,10]" responsiveLayout="scroll"
                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}">
 
-                        <Column field="mint" header="Mint" :sortable="true">
+                        <Column field="mint" header="Token Address" :sortable="true">
                             <template #body="{data}">
                                 <a :href="`https://solscan.io/token/${data.mint}`"
                                    target="_blank">{{ truncateInTheMiddle(data.mint, 10) }}</a>

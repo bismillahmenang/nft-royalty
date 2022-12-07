@@ -20,7 +20,7 @@ the Solana blockchain and wants to keep track of their royalty earnings.
 - https://opensea.io
 
 # Video demo
-
+https://youtu.be/1s_u6oCn0LE
 
 
 # How to use

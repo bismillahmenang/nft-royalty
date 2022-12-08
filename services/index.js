@@ -1,19 +1,4 @@
-import axios from 'axios'
 
-export async function getNFTDetailFromHelius(nftAddress) {
-  const url = "https://api.helius.xyz/v0/tokens/metadata?api-key=6fd66ba2-d834-4604-a08d-03163629a599"
-  const nftAddresses = [
-    nftAddress
-  ]
-  const {data} = await axios.post(url, {mintAccounts: nftAddresses})
-  return data
-}
-
-
-export async function getNFTDetailSolscan(nftAddress){
-    const res=await fetch(`https://public-api.solscan.io/nft/detail?mint=${nftAddress}`)
-    return res.json()
-}
 export async function getNFTMetadataSolscan(nftAddress){
     const res=await fetch(`https://api.solscan.io/token/meta?token=${nftAddress}`)
     return res.json()
@@ -40,9 +25,16 @@ export async function getNFTRoyaltyFromDeta(updateAuthority, symbol,mintAddress,
 export async function getNFTUpdateAuthorityAndCollectionName(nftAddress) {
     const res = await fetch(`https://api.solscan.io/account?address=${nftAddress}`)
     const data=await res.json();
-    const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
-    const data2=await res2.json();
-    return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name,image:data.data.metadata.data.uri}
+    if(!data?.data?.metadata?.collection?.key){
+        const res2 = await fetch(`https://api.solscan.io/nft/detail?mint=${nftAddress}`)
+        const data2=await res2.json();
+        return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.collection,image:data.data.metadata.data.uri}
+    }else{
+        const res2 = await fetch(`https://api.solscan.io/account?address=${data.data.metadata.collection.key}`)
+        const data2=await res2.json();
+        return {updateAuthority:data.data.metadata.updateAuthority,collectionName:data2.data.metadata.data.name,image:data.data.metadata.data.uri}
+    }
+
 }
 export async function getNFTCollectionId(collectionAddress) {
     const res = await fetch(`https://api.solscan.io/nft/detail?mint=${collectionAddress}`)

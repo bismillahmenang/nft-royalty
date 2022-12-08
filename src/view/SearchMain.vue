@@ -6,7 +6,7 @@
                     <v-text-field
                             v-model="NFTId"
                             clearable
-                            label="Input Solana NFT Token Address Here"
+                            label="Input Solana NFT Mint Address Here"
                             type="text"
                             variant="outlined"
                             :disabled="loading"
@@ -80,7 +80,7 @@
 
                     <div class="font-weight-bold text-h6">Name</div>
                     <div>{{ NFTMetadata?.data?.name }}</div>
-                    <div class="font-weight-bold text-h6">Token Address</div>
+                    <div class="font-weight-bold text-h6">Mint Address</div>
                     <div><a :href="`https://solscan.io/token/${NFTId}`"
                             target="_blank">{{ NFTId }}</a></div>
                     <div class="font-weight-bold text-h6">Collection Name</div>

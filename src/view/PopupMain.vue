@@ -33,6 +33,7 @@
             </template>
 
         </v-card>
+
         <v-card
                 class="my-2"
                 width="400"
@@ -41,11 +42,20 @@
             <template v-slot:title>
                 Last Buyer
             </template>
-            <template v-slot:text>
-                <span v-if="!royalty.buyer">no buyer found</span>
-                <a v-else :href="`https://solscan.io/account/${ royalty.buyer }`" target="_blank">{{
-                        royalty.buyer
-                    }}</a>
+
+            <template  v-slot:text>
+            <v-progress-circular
+            indeterminate
+            color="primary"
+            v-if="loading2"
+            ></v-progress-circular>
+            <div v-else>
+            <span v-if="!royalty.buyer">no buyer found</span>
+            <a v-else :href="`https://solscan.io/account/${ royalty.buyer }`" target="_blank">{{
+            royalty.buyer
+            }}</a>
+            </div>
+
             </template>
 
         </v-card>
@@ -58,7 +68,13 @@
                 Last Sales Royalty
             </template>
             <template v-slot:text>
-                {{ lastSalesRoyalty }} SOL
+            <v-progress-circular
+            indeterminate
+            color="primary"
+            v-if="loading2"
+            ></v-progress-circular>
+            <div v-else>{{ lastSalesRoyalty }} SOL</div>
+
             </template>
 
         </v-card>
@@ -71,8 +87,16 @@
                 Last Sales Date
             </template>
             <template v-slot:text>
-                <span v-if="date.trim().length===0">no sales date found</span>
-                <span v-else>{{ date }}</span>
+            <v-progress-circular
+            indeterminate
+            color="primary"
+            v-if="loading2"
+            ></v-progress-circular>
+            <div v-else>
+            <span v-if="date.trim().length===0">no sales date found</span>
+            <span v-else>{{ date }}</span>
+            </div>
+                
 
             </template>
 
@@ -106,12 +130,14 @@ const loading = ref(false)
 const royalty = ref({})
 const lastSalesRoyalty = ref(0)
 const date = ref("")
+const loading2 = ref(false)
 onMounted(async () => {
     await checkNFT()
 })
 
 async function checkNFT() {
     loading.value = true
+loading2.value=true
     let queryOptions = {active: true, currentWindow: true}
     let [tab] = await chrome.tabs.query(queryOptions)
 
@@ -142,12 +168,15 @@ async function checkNFT() {
             _royaltyData = {}
             _royaltyData.items = []
             _royaltyData.items = await getNFTRoyalty(updateAuthority, collectionName)
+        loading.value = false
         } else {
+        loading.value = false
             while (_royaltyData.last) {
                 let royal = await getNFTRoyaltyFromDeta(updateAuthority, collectionName, NFTId.value, _royaltyData.last)
                 _royaltyData.items = _royaltyData.items.concat(royal.items)
                 _royaltyData.last = royal.last
             }
+
         }
         const a = sortDate(_royaltyData.items);
 
@@ -156,8 +185,7 @@ async function checkNFT() {
 //      console.log(sortDate(_royaltyData.items)[_royaltyData.items.length-1])
         lastSalesRoyalty.value = lamportsToSol(royalty.value.royalty_fee);
         date.value = ISOdateToReadable(a[a.length - 1].time)
-        console.log(ISOdateToReadable(a[a.length - 1].time))
-        console.log(ISOdateToReadable(a[0].time))
+
         localStorage.setItem(tempNFTId, JSON.stringify({
             NFTId: NFTId.value,
             NFTMetadata: NFTMetadata.value,
@@ -165,13 +193,13 @@ async function checkNFT() {
             lastSalesRoyalty: lastSalesRoyalty.value,
             date: date.value
         }));
-        loading.value = false
 
+    loading2.value=false
     } catch (e) {
 
         console.log(e.message)
         loading.value = false
-
+    loading2.value=false
     }
 
 

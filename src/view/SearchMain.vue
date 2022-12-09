@@ -92,7 +92,13 @@
                             target="_blank">{{ updateAuthority }}</a></div>
                 </template>
             </v-card>
-            <v-card class="my-2">
+        <v-progress-circular
+        v-if="loading2"
+        color="info"
+        indeterminate
+        size="24"
+        ></v-progress-circular>
+            <v-card v-else class="my-2">
                 <template v-slot:title>
                     Total royalty for NFT {{ NFTMetadata?.data?.name }} from {{ startDate }} to {{ endDate }}
                 </template>
@@ -100,7 +106,13 @@
                 <span class="text-h5 text-bold"> {{ lamportsToSol(totalRoyalty) }} SOL</span>
                 </template>
             </v-card>
-            <v-card class="my-2">
+        <v-progress-circular
+        v-if="loading2"
+        color="info"
+        indeterminate
+        size="24"
+        ></v-progress-circular>
+            <v-card v-else class="my-2">
                 <template v-slot:title>
                     List of address who pay royalty to NFT {{ NFTMetadata?.data?.name }} from {{ startDate }} to
                     {{ endDate }}
@@ -126,7 +138,13 @@
                 </template>
             </v-card>
             <div class="text-center text-h3 my-5">NFT Collections {{ collectionName }} Royalty Detail</div>
-            <v-card class="my-2">
+        <v-progress-circular
+        v-if="loading2"
+        color="info"
+        indeterminate
+        size="24"
+        ></v-progress-circular>
+            <v-card v-else class="my-2">
                 <template v-slot:title>
                     All Transactions sales of collection {{ collectionName }} from {{ startDate }} to {{ endDate }}
                 </template>
@@ -188,10 +206,16 @@
                     </DataTable>
                     source: <a target="_blank"
                                :href="`https://api.coralcube.cc/0dec5037-f67d-4da8-9eb6-97e2a09ffe9a/inspector/getMintActivities?update_authority=${updateAuthority}&collection_symbol=${aaa}&limit=1`">Coral
-                    Cube API</a>
+                               Cube API</a> and <a target="_blank" href="https://github.com/bismillahmenang/coral-auto">saved coral cube data</a>
                 </template>
             </v-card>
-        <v-card class="my-2">
+        <v-progress-circular
+        v-if="loading2"
+        color="info"
+        indeterminate
+        size="24"
+        ></v-progress-circular>
+        <v-card v-else class="my-2">
         <template v-slot:title>
         Address that paid royalty to {{ collectionName }} collections from {{ startDate }} to {{ endDate }}
         </template>
@@ -234,7 +258,13 @@
         </DataTable>
         </template>
         </v-card>
-        <v-card class="my-2">
+        <v-progress-circular
+        v-if="loading2"
+        color="info"
+        indeterminate
+        size="24"
+        ></v-progress-circular>
+        <v-card v-else class="my-2">
         <template v-slot:title>
         Total royalty paid to {{ collectionName }} collections from {{ startDate }} to {{ endDate }}
         </template>
@@ -274,6 +304,7 @@ const royaltyFilter = ref([])
 const royaltyGiver = ref([])
 const royaltyCollectionGiver = ref([])
 const totalCollectionsRoyalty = ref([])
+const loading2 = ref(false)
 function isEmpty(obj) {
 return Object.getOwnPropertyNames(obj).length === 0;
 }
@@ -288,6 +319,7 @@ onMounted(async () => {
 
 async function searchNFT() {
   loading.value = true
+loading2.value=true
   try {
     const {collectionId: CI} = await getNFTCollectionId(NFTId.value)
 
@@ -309,7 +341,9 @@ async function searchNFT() {
       _royaltyData = {}
       _royaltyData.items = []
       _royaltyData.items = await getNFTRoyalty(_updateAuthority, _collectionName)
+    loading.value = false
     } else {
+    loading.value = false
       while (_royaltyData.last) {
         let royal = await getNFTRoyaltyFromDeta(_updateAuthority, _collectionName, NFTId.value, _royaltyData.last)
         _royaltyData.items = _royaltyData.items.concat(royal.items)
@@ -333,10 +367,11 @@ async function searchNFT() {
   let newObj = acc + obj.royalty_fee
   return newObj
   }, 0)
-    loading.value = false
+  loading2.value=false
   search.value=false
   } catch (e) {
     console.log(e.message)
+  loading2.value=false
     loading.value = false
   search.value=true
   }
